@@ -1,0 +1,17 @@
+name: PR Auto Label
+description: Automatically label PRs
+author: tobytheghost
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+    
+    - name: Install dependencies
+      run: |
+        bun install
+        bun run index.ts
+    
