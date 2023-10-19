@@ -7,7 +7,7 @@ const LABELS = {
   L: "size/L",
   XL: "size/XL",
   XXL: "size/XXL",
-} as const;
+};
 
 async function main() {
   console.log("Starting action");
@@ -48,16 +48,17 @@ async function main() {
   });
 }
 
+/** @param {{
+ *  octokit: ReturnType<typeof getOctokit>;
+ *  owner: string;
+ *  repo: string;
+ *  number: number;
+ * }} getPullRequestChangedLinesProps */
 async function getPullRequestChangedLines({
   octokit,
   owner,
   repo,
   number,
-}: {
-  octokit: ReturnType<typeof getOctokit>;
-  owner: string;
-  repo: string;
-  number: number;
 }) {
   const response = await octokit.rest.pulls.get({
     owner: owner,
@@ -68,7 +69,8 @@ async function getPullRequestChangedLines({
   return response.data.additions + response.data.deletions;
 }
 
-async function getPRSize(linesChanged: number) {
+/** @param {number} linesChanged */
+async function getPRSize(linesChanged) {
   switch (true) {
     case linesChanged <= 50:
       return LABELS.XS;
@@ -87,18 +89,19 @@ async function getPRSize(linesChanged: number) {
   }
 }
 
+/** @param {{
+ *  octokit: ReturnType<typeof getOctokit>;
+ *  owner: string;
+ *  repo: string;
+ *  number: number;
+ *  label: string;
+ * }} addLabelToPRProps */
 async function addLabelToPR({
   octokit,
   owner,
   repo,
   number,
   label,
-}: {
-  octokit: ReturnType<typeof getOctokit>;
-  owner: string;
-  repo: string;
-  number: number;
-  label: string;
 }) {
   const response = await octokit.rest.issues.addLabels({
     owner: owner,
