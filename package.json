@@ -2,7 +2,7 @@
   "name": "pr-auto-label",
   "module": "index.js",
   "type": "module",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "scripts": {
     "release": "release-it"
   },
