@@ -3,17 +3,5 @@ description: Automatically label PRs
 author: tobytheghost
 
 runs:
-  using: "composite"
-  steps:
-    - name: Setup bun
-      uses: oven-sh/setup-bun@v1
-      with:
-        bun-version: latest
-    
-    - name: Install dependencies
-      shell: bash
-      working-directory: ./
-      run: |
-        bun install
-        bun run index.ts
-    
+  using: "node20"
+  main: "./dist/index.js"
