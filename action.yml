@@ -13,7 +13,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        ls
+        cd ./
         bun install
         bun run index.ts
     
