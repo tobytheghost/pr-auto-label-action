@@ -26,5 +26,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add dist
-          git commit -m "Add dist folder"
+          git commit -m "Build and Deploy"
           git push
