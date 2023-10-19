@@ -5,7 +5,7 @@
   "version": "1.0.10",
   "export": "./dist/index.js",
   "scripts": {
-    "build": "bun build --minify ./index.ts --outfile=./dist/index.js",
+    "build": "bun build --minify ./index.ts --outfile=./dist/index.js --target node",
     "release": "release-it"
   },
   "devDependencies": {
