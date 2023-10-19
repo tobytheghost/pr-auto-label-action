@@ -10,6 +10,8 @@ const LABELS = {
 } as const;
 
 async function main() {
+  console.log("Starting action");
+  
   if (context.eventName !== "pull_request") {
     throw new Error("This action only works on pull requests");
   }
@@ -24,12 +26,16 @@ async function main() {
   const repo = context.repo.repo;
   const octokit = getOctokit(token);
 
+  console.log(`Getting changed lines for PR #${number}`);
+
   const linesChanged = await getPullRequestChangedLines({
     octokit,
     owner,
     repo,
     number,
   });
+
+  console.log(`PR #${number} has ${linesChanged} lines changed`);
 
   const label = await getPRSize(linesChanged);
 
@@ -102,7 +108,7 @@ async function addLabelToPR({
   });
 
   if (response.status !== 200) {
-	throw new Error("Failed to add label to PR");
+    throw new Error("Failed to add label to PR");
   }
 
   console.log(`Added label ${label} to PR #${number}`);
