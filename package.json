@@ -4,6 +4,7 @@
   "type": "module",
   "version": "1.0.15",
   "scripts": {
+    "build": "npx @vercel/ncc build index.js",
     "release": "release-it"
   },
   "dependencies": {
