@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "build": "ncc build index.ts"
+    "build": "ncc build ./src/index.ts"
   },
   "dependencies": {
     "@actions/core": "^1.10.1",
