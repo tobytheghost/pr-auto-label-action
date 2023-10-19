@@ -3,7 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "version": "1.0.6",
+  "export": "./dist/index.js",
   "scripts": {
+    "build": "bun build --minify ./index.ts --outfile=./dist/index.js",
     "release": "release-it"
   },
   "devDependencies": {
