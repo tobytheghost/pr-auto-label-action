@@ -37,14 +37,14 @@ async function main() {
 
   console.log(`PR #${number} has ${linesChanged} lines changed`);
 
-  const label = await getPRSize(linesChanged);
+  const sizeLabel = await getPRSize(linesChanged);
 
-  await addLabelToPR({
+  await addLabelsToPR({
     octokit,
     owner,
     repo,
     number,
-    label,
+    labels: [sizeLabel],
   });
 }
 
@@ -94,27 +94,27 @@ async function getPRSize(linesChanged) {
  *  owner: string;
  *  repo: string;
  *  number: number;
- *  label: string;
+ *  labels: string[];
  * }} addLabelToPRProps */
-async function addLabelToPR({
+async function addLabelsToPR({
   octokit,
   owner,
   repo,
   number,
-  label,
+  labels,
 }) {
   const response = await octokit.rest.issues.addLabels({
     owner: owner,
     repo: repo,
     issue_number: number,
-    labels: [label],
+    labels: labels,
   });
 
   if (response.status !== 200) {
     throw new Error("Failed to add label to PR");
   }
 
-  console.log(`Added label ${label} to PR #${number}`);
+  console.log(`Added labels ${labels.join(',')} to PR #${number}`);
 }
 
 main();
