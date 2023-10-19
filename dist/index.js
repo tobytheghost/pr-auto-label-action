@@ -28138,6 +28138,35 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("zlib");
 /******/ }
 /******/ 
 /************************************************************************/
+/******/ /* webpack/runtime/compat get default export */
+/******/ (() => {
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__nccwpck_require__.n = (module) => {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			() => (module['default']) :
+/******/ 			() => (module);
+/******/ 		__nccwpck_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/define property getters */
+/******/ (() => {
+/******/ 	// define getter functions for harmony exports
+/******/ 	__nccwpck_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			}
+/******/ 		}
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/hasOwnProperty shorthand */
+/******/ (() => {
+/******/ 	__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ })();
+/******/ 
 /******/ /* webpack/runtime/compat */
 /******/ 
 /******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
@@ -28147,125 +28176,109 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(5438);
-
-
-const LABELS = {
-  XS: "size/XS",
-  S: "size/S",
-  M: "size/M",
-  L: "size/L",
-  XL: "size/XL",
-  XXL: "size/XXL",
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_0__);
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 
-async function main() {
-  console.log("Starting action");
-  
-  if (_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.eventName !== "pull_request") {
-    throw new Error("This action only works on pull requests");
-  }
-
-  const number = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload.pull_request?.number;
-  const token = process.env?.GITHUB_TOKEN;
-
-  if (!number) throw new Error("No pull request number found in context");
-  if (!token) throw new Error("No GITHUB_TOKEN found in environment variables");
-
-  const owner = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner;
-  const repo = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo;
-  const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_0__.getOctokit)(token);
-
-  console.log(`Getting changed lines for PR #${number}`);
-
-  const linesChanged = await getPullRequestChangedLines({
-    octokit,
-    owner,
-    repo,
-    number,
-  });
-
-  console.log(`PR #${number} has ${linesChanged} lines changed`);
-
-  const sizeLabel = await getPRSize(linesChanged);
-
-  await addLabelsToPR({
-    octokit,
-    owner,
-    repo,
-    number,
-    labels: [sizeLabel],
-  });
+function main() {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("Starting action");
+        if (_actions_github__WEBPACK_IMPORTED_MODULE_0__.context.eventName !== "pull_request") {
+            throw new Error("This action only works on pull requests");
+        }
+        const number = (_a = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
+        if (!number)
+            throw new Error("No pull request number found in context");
+        const token = (_b = process.env) === null || _b === void 0 ? void 0 : _b.GITHUB_TOKEN;
+        if (!token)
+            throw new Error("No GITHUB_TOKEN found in environment variables");
+        const owner = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.owner;
+        const repo = _actions_github__WEBPACK_IMPORTED_MODULE_0__.context.repo.repo;
+        const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_0__.getOctokit)(token);
+        const pullRequest = yield getPullRequest({
+            octokit,
+            owner,
+            repo,
+            number,
+        });
+        console.log(`Getting changed lines for PR #${number}`);
+        const linesChanged = getPullRequestChangedLines(pullRequest);
+        console.log(`PR #${number} has ${linesChanged} lines changed`);
+        const sizeLabel = getPRSize(linesChanged);
+        const labels = [sizeLabel];
+        yield addLabelsToPR({
+            octokit,
+            owner,
+            repo,
+            number,
+            labels,
+        });
+        console.log(`Added labels ${labels.join(",")} to PR #${number}`);
+    });
 }
-
-/** @param {{
- *  octokit: ReturnType<typeof getOctokit>;
- *  owner: string;
- *  repo: string;
- *  number: number;
- * }} getPullRequestChangedLinesProps */
-async function getPullRequestChangedLines({
-  octokit,
-  owner,
-  repo,
-  number,
-}) {
-  const response = await octokit.rest.pulls.get({
-    owner: owner,
-    repo: repo,
-    pull_number: number,
-  });
-
-  return response.data.additions + response.data.deletions;
+function getPullRequest({ octokit, owner, repo, number, }) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield octokit.rest.pulls.get({
+            owner: owner,
+            repo: repo,
+            pull_number: number,
+        });
+        if (response.status !== 200)
+            throw new Error("Failed to get PR");
+        return response.data;
+    });
 }
-
-/** @param {number} linesChanged */
-async function getPRSize(linesChanged) {
-  switch (true) {
-    case linesChanged <= 50:
-      return LABELS.XS;
-    case linesChanged <= 100:
-      return LABELS.S;
-    case linesChanged <= 250:
-      return LABELS.M;
-    case linesChanged <= 500:
-      return LABELS.L;
-    case linesChanged <= 1000:
-      return LABELS.XL;
-    case linesChanged > 1000:
-      return LABELS.XXL;
-    default:
-      throw new Error("No size found");
-  }
+function getPullRequestChangedLines(pullRequest) {
+    return pullRequest.additions + pullRequest.deletions;
 }
-
-/** @param {{
- *  octokit: ReturnType<typeof getOctokit>;
- *  owner: string;
- *  repo: string;
- *  number: number;
- *  labels: string[];
- * }} addLabelToPRProps */
-async function addLabelsToPR({
-  octokit,
-  owner,
-  repo,
-  number,
-  labels,
-}) {
-  const response = await octokit.rest.issues.addLabels({
-    owner: owner,
-    repo: repo,
-    issue_number: number,
-    labels: labels,
-  });
-
-  if (response.status !== 200) {
-    throw new Error("Failed to add label to PR");
-  }
-
-  console.log(`Added labels ${labels.join(',')} to PR #${number}`);
+const SIZES = {
+    XS: 50,
+    S: 100,
+    M: 250,
+    L: 500,
+    XL: 1000,
+};
+const LABELS = {
+    XS: "size/XS",
+    S: "size/S",
+    M: "size/M",
+    L: "size/L",
+    XL: "size/XL",
+    XXL: "size/XXL",
+};
+function getPRSize(linesChanged) {
+    if (linesChanged <= SIZES.XS)
+        return LABELS.XS;
+    if (linesChanged <= SIZES.S)
+        return LABELS.S;
+    if (linesChanged <= SIZES.M)
+        return LABELS.M;
+    if (linesChanged <= SIZES.L)
+        return LABELS.L;
+    if (linesChanged <= SIZES.XL)
+        return LABELS.XL;
+    return LABELS.XXL;
 }
-
+function addLabelsToPR({ octokit, owner, repo, number, labels, }) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = yield octokit.rest.issues.addLabels({
+            owner: owner,
+            repo: repo,
+            issue_number: number,
+            labels: labels,
+        });
+        if (response.status !== 200)
+            throw new Error("Failed to add label to PR");
+    });
+}
 main();
 
 })();
