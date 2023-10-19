@@ -11,6 +11,7 @@ runs:
         bun-version: latest
     
     - name: Install dependencies
+      shell: bash
       run: |
         bun install
         bun run index.ts
