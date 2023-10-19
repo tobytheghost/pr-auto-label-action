@@ -9,9 +9,6 @@ runs:
       uses: oven-sh/setup-bun@v1
       with:
         bun-version: latest
-
-    - name: Pull files
-      uses: actions/checkout@v3
     
     - name: Install dependencies
       shell: bash
