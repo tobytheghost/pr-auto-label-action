@@ -1,4 +1,5 @@
-import { type PullRequest } from "./getPullRequest";
+import { type PullRequest } from "../../queries/getPullRequest";
+import { LABELS } from "../../config";
 
 const SIZES = {
   XS: 50,
@@ -8,22 +9,13 @@ const SIZES = {
   XL: 1000,
 } as const;
 
-const LABELS = {
-  XS: "size/XS",
-  S: "size/S",
-  M: "size/M",
-  L: "size/L",
-  XL: "size/XL",
-  XXL: "size/XXL",
-} as const;
-
 function getSizeLabelByLinesChanged(linesChanged: number) {
-  if (linesChanged <= SIZES.XS) return LABELS.XS;
-  if (linesChanged <= SIZES.S) return LABELS.S;
-  if (linesChanged <= SIZES.M) return LABELS.M;
-  if (linesChanged <= SIZES.L) return LABELS.L;
-  if (linesChanged <= SIZES.XL) return LABELS.XL;
-  return LABELS.XXL;
+  if (linesChanged <= SIZES.XS) return LABELS.SIZE_XS;
+  if (linesChanged <= SIZES.S) return LABELS.SIZE_S;
+  if (linesChanged <= SIZES.M) return LABELS.SIZE_M;
+  if (linesChanged <= SIZES.L) return LABELS.SIZE_L;
+  if (linesChanged <= SIZES.XL) return LABELS.SIZE_XL;
+  return LABELS.SIZE_XXL;
 }
 
 function getPullRequestChangedLines(pullRequest: PullRequest) {

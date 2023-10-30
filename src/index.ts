@@ -1,8 +1,10 @@
 import { context, getOctokit } from "@actions/github";
 
-import getPullRequest from "./getPullRequest";
-import getSizeLabel from "./getSizeLabel";
-import addLabelsToPR from "./addLabelsToPR";
+import getPullRequest from "./queries/getPullRequest";
+import addLabelsToPR from "./actions/addLabelsToPR";
+import { getLabelsToAdd } from "./labels/getLabelsToAdd";
+import { getLabelsToRemove } from "./queries/getLabelsToRemove";
+import removeLabelsFromPR from "./actions/removeLabelsFromPR";
 
 async function main() {
   console.log("Starting action");
@@ -28,16 +30,24 @@ async function main() {
     number,
   });
 
-  const sizeLabel = getSizeLabel(pullRequest);
+  const labelsToRemove = getLabelsToRemove(pullRequest);
 
-  const labels = [sizeLabel];
+  await removeLabelsFromPR({
+    octokit,
+    owner,
+    repo,
+    number,
+    labels: labelsToRemove,
+  });
+
+  const labelsToAdd = getLabelsToAdd(pullRequest);
 
   await addLabelsToPR({
     octokit,
     owner,
     repo,
     number,
-    labels,
+    labels: labelsToAdd,
   });
 }
 
