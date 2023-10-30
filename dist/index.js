@@ -28149,7 +28149,7 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(5438);
-;// CONCATENATED MODULE: ./src/getPullRequest.ts
+;// CONCATENATED MODULE: ./src/queries/getPullRequest.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -28171,49 +28171,9 @@ function getPullRequest({ octokit, owner, repo, number, }) {
         return response.data;
     });
 }
-/* harmony default export */ const src_getPullRequest = (getPullRequest);
+/* harmony default export */ const queries_getPullRequest = (getPullRequest);
 
-;// CONCATENATED MODULE: ./src/getSizeLabel.ts
-const SIZES = {
-    XS: 50,
-    S: 100,
-    M: 250,
-    L: 500,
-    XL: 1000,
-};
-const LABELS = {
-    XS: "size/XS",
-    S: "size/S",
-    M: "size/M",
-    L: "size/L",
-    XL: "size/XL",
-    XXL: "size/XXL",
-};
-function getSizeLabelByLinesChanged(linesChanged) {
-    if (linesChanged <= SIZES.XS)
-        return LABELS.XS;
-    if (linesChanged <= SIZES.S)
-        return LABELS.S;
-    if (linesChanged <= SIZES.M)
-        return LABELS.M;
-    if (linesChanged <= SIZES.L)
-        return LABELS.L;
-    if (linesChanged <= SIZES.XL)
-        return LABELS.XL;
-    return LABELS.XXL;
-}
-function getPullRequestChangedLines(pullRequest) {
-    return pullRequest.additions + pullRequest.deletions;
-}
-function getSizeLabel(pullRequest) {
-    console.log(`Getting changed lines for PR #${pullRequest.number}`);
-    const linesChanged = getPullRequestChangedLines(pullRequest);
-    console.log(`Changed lines for PR #${pullRequest.number}: ${linesChanged}`);
-    return getSizeLabelByLinesChanged(linesChanged);
-}
-/* harmony default export */ const src_getSizeLabel = (getSizeLabel);
-
-;// CONCATENATED MODULE: ./src/addLabelsToPR.ts
+;// CONCATENATED MODULE: ./src/actions/addLabelsToPR.ts
 var addLabelsToPR_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -28236,7 +28196,97 @@ function addLabelsToPR({ octokit, owner, repo, number, labels, }) {
         console.log(`Added labels [${labels.join(",")}] to PR #${number}`);
     });
 }
-/* harmony default export */ const src_addLabelsToPR = (addLabelsToPR);
+/* harmony default export */ const actions_addLabelsToPR = (addLabelsToPR);
+
+;// CONCATENATED MODULE: ./src/config.ts
+const LABELS = {
+    SIZE_XS: "size/XS",
+    SIZE_S: "size/S",
+    SIZE_M: "size/M",
+    SIZE_L: "size/L",
+    SIZE_XL: "size/XL",
+    SIZE_XXL: "size/XXL",
+};
+const LABEL_LIST = Object.values(LABELS);
+
+;// CONCATENATED MODULE: ./src/labels/size/getSizeLabel.ts
+
+const SIZES = {
+    XS: 50,
+    S: 100,
+    M: 250,
+    L: 500,
+    XL: 1000,
+};
+function getSizeLabelByLinesChanged(linesChanged) {
+    if (linesChanged <= SIZES.XS)
+        return LABELS.SIZE_XS;
+    if (linesChanged <= SIZES.S)
+        return LABELS.SIZE_S;
+    if (linesChanged <= SIZES.M)
+        return LABELS.SIZE_M;
+    if (linesChanged <= SIZES.L)
+        return LABELS.SIZE_L;
+    if (linesChanged <= SIZES.XL)
+        return LABELS.SIZE_XL;
+    return LABELS.SIZE_XXL;
+}
+function getPullRequestChangedLines(pullRequest) {
+    return pullRequest.additions + pullRequest.deletions;
+}
+function getSizeLabel(pullRequest) {
+    console.log(`Getting changed lines for PR #${pullRequest.number}`);
+    const linesChanged = getPullRequestChangedLines(pullRequest);
+    console.log(`Changed lines for PR #${pullRequest.number}: ${linesChanged}`);
+    return getSizeLabelByLinesChanged(linesChanged);
+}
+/* harmony default export */ const size_getSizeLabel = (getSizeLabel);
+
+;// CONCATENATED MODULE: ./src/labels/getLabelsToAdd.ts
+
+function getLabelsToAdd(pullRequest) {
+    const sizeLabel = size_getSizeLabel(pullRequest);
+    return [sizeLabel];
+}
+
+;// CONCATENATED MODULE: ./src/queries/getLabelsToRemove.ts
+
+function getLabelsToRemove(pullRequest) {
+    const labelsFromPR = pullRequest.labels.map((label) => label.name);
+    const labelsToRemove = labelsFromPR.filter((label) => LABEL_LIST.includes(label));
+    return labelsToRemove;
+}
+
+;// CONCATENATED MODULE: ./src/actions/removeLabelsFromPR.ts
+var removeLabelsFromPR_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+function removeLabelsFromPR({ octokit, owner, repo, number, labels, }) {
+    return removeLabelsFromPR_awaiter(this, void 0, void 0, function* () {
+        const response = yield Promise.allSettled(labels.map((label) => {
+            return octokit.rest.issues.removeLabel({
+                owner: owner,
+                repo: repo,
+                issue_number: number,
+                name: label,
+            });
+        }));
+        response
+            .filter((r) => r.status !== "fulfilled")
+            .forEach((r) => {
+            console.log(r);
+            throw new Error("Failed to remove label from PR");
+        });
+        console.log(`Remove labels [${labels.join(",")}] from PR #${number}`);
+    });
+}
+/* harmony default export */ const actions_removeLabelsFromPR = (removeLabelsFromPR);
 
 ;// CONCATENATED MODULE: ./src/index.ts
 var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -28248,6 +28298,8 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
+
 
 
 
@@ -28268,20 +28320,27 @@ function main() {
         const owner = github.context.repo.owner;
         const repo = github.context.repo.repo;
         const octokit = (0,github.getOctokit)(token);
-        const pullRequest = yield src_getPullRequest({
+        const pullRequest = yield queries_getPullRequest({
             octokit,
             owner,
             repo,
             number,
         });
-        const sizeLabel = src_getSizeLabel(pullRequest);
-        const labels = [sizeLabel];
-        yield src_addLabelsToPR({
+        const labelsToRemove = getLabelsToRemove(pullRequest);
+        yield actions_removeLabelsFromPR({
             octokit,
             owner,
             repo,
             number,
-            labels,
+            labels: labelsToRemove,
+        });
+        const labelsToAdd = getLabelsToAdd(pullRequest);
+        yield actions_addLabelsToPR({
+            octokit,
+            owner,
+            repo,
+            number,
+            labels: labelsToAdd,
         });
     });
 }
