@@ -25,6 +25,8 @@ jobs:
       - uses: tobytheghost/pr-auto-label-action@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IGNORED_FILES:
+            - "file-to-ignore.js"
 ```
 
 ## Labels
