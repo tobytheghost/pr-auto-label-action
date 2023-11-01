@@ -7,8 +7,6 @@ import { getLabelsToRemove } from "./queries/getLabelsToRemove";
 import removeLabelsFromPR from "./actions/removeLabelsFromPR";
 import { getChanges } from "./queries/getChanges";
 
-const IGNORED_FILES = ["package-lock.json"];
-
 async function main() {
   console.log("Starting action");
 
@@ -21,6 +19,8 @@ async function main() {
 
   const token = process.env?.GITHUB_TOKEN;
   if (!token) throw new Error("No GITHUB_TOKEN found in environment variables");
+
+  const ignoredFiles = process.env?.IGNORED_FILES || [];
 
   const owner = context.repo.owner;
   const repo = context.repo.repo;
@@ -41,7 +41,7 @@ async function main() {
   });
 
   const changedFiles = changes.data.files.filter((file) => {
-    if (!IGNORED_FILES.includes(file.filename)) return file;
+    if (!ignoredFiles.includes(file.filename)) return file;
     console.log(`Ignoring file ${file.filename}`);
   });
 
