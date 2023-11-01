@@ -1,10 +1,13 @@
 import { context, getOctokit } from "@actions/github";
 
-import getPullRequest from "./queries/getPullRequest";
+import getPullRequest, { PullRequest } from "./queries/getPullRequest";
 import addLabelsToPR from "./actions/addLabelsToPR";
 import { getLabelsToAdd } from "./labels/getLabelsToAdd";
 import { getLabelsToRemove } from "./queries/getLabelsToRemove";
 import removeLabelsFromPR from "./actions/removeLabelsFromPR";
+import { getChanges } from "./queries/getChanges";
+
+const IGNORED_FILES = ["package-lock.json"];
 
 async function main() {
   console.log("Starting action");
@@ -30,6 +33,17 @@ async function main() {
     number,
   });
 
+  const changes = await getChanges({
+    pullRequest,
+    octokit,
+    owner,
+    repo,
+  });
+
+  const changedFiles = changes.data.files.filter(
+    (file) => !IGNORED_FILES.includes(file.filename)
+  );
+
   const labelsToRemove = getLabelsToRemove(pullRequest);
 
   await removeLabelsFromPR({
@@ -40,7 +54,7 @@ async function main() {
     labels: labelsToRemove,
   });
 
-  const labelsToAdd = getLabelsToAdd(pullRequest);
+  const labelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
 
   await addLabelsToPR({
     octokit,
