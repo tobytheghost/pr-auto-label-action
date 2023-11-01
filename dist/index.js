@@ -28348,7 +28348,7 @@ function main() {
         if (!token)
             throw new Error("No GITHUB_TOKEN found in environment variables");
         const ignoredFiles = ((_d = (_c = process.env) === null || _c === void 0 ? void 0 : _c.IGNORED_FILES) === null || _d === void 0 ? void 0 : _d.split(' ')) || [];
-        console.log(`Ignoring files: ${ignoredFiles.join(", ")}`);
+        console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
         const owner = github.context.repo.owner;
         const repo = github.context.repo.repo;
         const octokit = (0,github.getOctokit)(token);
@@ -28367,7 +28367,7 @@ function main() {
         const changedFiles = changes.data.files.filter((file) => {
             if (!ignoredFiles.includes(file.filename))
                 return file;
-            console.log(`Ignoring file ${file.filename}`);
+            console.log(`Skipping file ${file.filename}`);
         });
         const labelsToRemove = getLabelsToRemove(pullRequest);
         yield actions_removeLabelsFromPR({
