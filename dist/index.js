@@ -28231,12 +28231,12 @@ function getSizeLabelByLinesChanged(linesChanged) {
         return LABELS.SIZE_XL;
     return LABELS.SIZE_XXL;
 }
-function getPullRequestChangedLines(pullRequest) {
-    return pullRequest.additions + pullRequest.deletions;
+function getChangedLines(changedFiles) {
+    return changedFiles.reduce((acc, { additions, deletions }) => acc + additions + deletions, 0);
 }
-function getSizeLabel(pullRequest) {
+function getSizeLabel(pullRequest, changedFiles) {
     console.log(`Getting changed lines for PR #${pullRequest.number}`);
-    const linesChanged = getPullRequestChangedLines(pullRequest);
+    const linesChanged = getChangedLines(changedFiles);
     console.log(`Changed lines for PR #${pullRequest.number}: ${linesChanged}`);
     return getSizeLabelByLinesChanged(linesChanged);
 }
@@ -28244,8 +28244,8 @@ function getSizeLabel(pullRequest) {
 
 ;// CONCATENATED MODULE: ./src/labels/getLabelsToAdd.ts
 
-function getLabelsToAdd(pullRequest) {
-    const sizeLabel = size_getSizeLabel(pullRequest);
+function getLabelsToAdd(pullRequest, changedFiles) {
+    const sizeLabel = size_getSizeLabel(pullRequest, changedFiles);
     return [sizeLabel];
 }
 
@@ -28288,6 +28288,35 @@ function removeLabelsFromPR({ octokit, owner, repo, number, labels, }) {
 }
 /* harmony default export */ const actions_removeLabelsFromPR = (removeLabelsFromPR);
 
+;// CONCATENATED MODULE: ./src/queries/getChanges.ts
+var getChanges_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const getBaseBranch = (pullRequest) => {
+    return pullRequest.base.label;
+};
+const getHeadBranch = (pullRequest) => {
+    return pullRequest.head.label;
+};
+function getChanges({ pullRequest, octokit, owner, repo, }) {
+    return getChanges_awaiter(this, void 0, void 0, function* () {
+        const baseBranch = getBaseBranch(pullRequest);
+        const headBranch = getHeadBranch(pullRequest);
+        return octokit.rest.repos.compareCommits({
+            owner: owner,
+            repo: repo,
+            base: baseBranch,
+            head: headBranch,
+        });
+    });
+}
+
 ;// CONCATENATED MODULE: ./src/index.ts
 var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -28304,6 +28333,8 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
+
+const IGNORED_FILES = ["package-lock.json"];
 function main() {
     var _a, _b;
     return src_awaiter(this, void 0, void 0, function* () {
@@ -28326,6 +28357,13 @@ function main() {
             repo,
             number,
         });
+        const changes = yield getChanges({
+            pullRequest,
+            octokit,
+            owner,
+            repo,
+        });
+        const changedFiles = changes.data.files.filter((file) => !IGNORED_FILES.includes(file.filename));
         const labelsToRemove = getLabelsToRemove(pullRequest);
         yield actions_removeLabelsFromPR({
             octokit,
@@ -28334,7 +28372,7 @@ function main() {
             number,
             labels: labelsToRemove,
         });
-        const labelsToAdd = getLabelsToAdd(pullRequest);
+        const labelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
         yield actions_addLabelsToPR({
             octokit,
             owner,
