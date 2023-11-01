@@ -28335,7 +28335,7 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 function main() {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     return src_awaiter(this, void 0, void 0, function* () {
         console.log("Starting action");
         if (github.context.eventName !== "pull_request") {
@@ -28347,7 +28347,8 @@ function main() {
         const token = (_b = process.env) === null || _b === void 0 ? void 0 : _b.GITHUB_TOKEN;
         if (!token)
             throw new Error("No GITHUB_TOKEN found in environment variables");
-        const ignoredFiles = ((_c = process.env) === null || _c === void 0 ? void 0 : _c.IGNORED_FILES) || [];
+        const ignoredFiles = ((_d = (_c = process.env) === null || _c === void 0 ? void 0 : _c.IGNORED_FILES) === null || _d === void 0 ? void 0 : _d.split(' ')) || [];
+        console.log(`Ignoring files: ${ignoredFiles.join(", ")}`);
         const owner = github.context.repo.owner;
         const repo = github.context.repo.repo;
         const octokit = (0,github.getOctokit)(token);
