@@ -28334,9 +28334,8 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
-const IGNORED_FILES = ["package-lock.json"];
 function main() {
-    var _a, _b;
+    var _a, _b, _c;
     return src_awaiter(this, void 0, void 0, function* () {
         console.log("Starting action");
         if (github.context.eventName !== "pull_request") {
@@ -28348,6 +28347,7 @@ function main() {
         const token = (_b = process.env) === null || _b === void 0 ? void 0 : _b.GITHUB_TOKEN;
         if (!token)
             throw new Error("No GITHUB_TOKEN found in environment variables");
+        const ignoredFiles = ((_c = process.env) === null || _c === void 0 ? void 0 : _c.IGNORED_FILES) || [];
         const owner = github.context.repo.owner;
         const repo = github.context.repo.repo;
         const octokit = (0,github.getOctokit)(token);
@@ -28364,7 +28364,7 @@ function main() {
             repo,
         });
         const changedFiles = changes.data.files.filter((file) => {
-            if (!IGNORED_FILES.includes(file.filename))
+            if (!ignoredFiles.includes(file.filename))
                 return file;
             console.log(`Ignoring file ${file.filename}`);
         });
