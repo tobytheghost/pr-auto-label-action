@@ -40,9 +40,10 @@ async function main() {
     repo,
   });
 
-  const changedFiles = changes.data.files.filter(
-    (file) => !IGNORED_FILES.includes(file.filename)
-  );
+  const changedFiles = changes.data.files.filter((file) => {
+    if (!IGNORED_FILES.includes(file.filename)) return file;
+    console.log(`Ignoring file ${file.filename}`);
+  });
 
   const labelsToRemove = getLabelsToRemove(pullRequest);
 
