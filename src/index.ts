@@ -21,7 +21,7 @@ async function main() {
   if (!token) throw new Error("No GITHUB_TOKEN found in environment variables");
 
   const ignoredFiles = process.env?.IGNORED_FILES?.split(' ') || [];
-  console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
+  ignoredFiles.length && console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
 
   const owner = context.repo.owner;
   const repo = context.repo.repo;
