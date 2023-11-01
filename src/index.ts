@@ -21,7 +21,7 @@ async function main() {
   if (!token) throw new Error("No GITHUB_TOKEN found in environment variables");
 
   const ignoredFiles = process.env?.IGNORED_FILES?.split(' ') || [];
-  console.log(`Ignoring files: ${ignoredFiles.join(", ")}`);
+  console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
 
   const owner = context.repo.owner;
   const repo = context.repo.repo;
@@ -43,7 +43,7 @@ async function main() {
 
   const changedFiles = changes.data.files.filter((file) => {
     if (!ignoredFiles.includes(file.filename)) return file;
-    console.log(`Ignoring file ${file.filename}`);
+    console.log(`Skipping file ${file.filename}`);
   });
 
   const labelsToRemove = getLabelsToRemove(pullRequest);
