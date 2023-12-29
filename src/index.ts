@@ -1,10 +1,10 @@
 import { context, getOctokit } from "@actions/github";
 
-import getPullRequest, { PullRequest } from "./queries/getPullRequest";
-import addLabelsToPR from "./actions/addLabelsToPR";
+import { getPullRequest } from "./queries/getPullRequest";
+import { addLabelsToPR } from "./actions/addLabelsToPR";
 import { getLabelsToAdd } from "./labels/getLabelsToAdd";
 import { getLabelsToRemove } from "./queries/getLabelsToRemove";
-import removeLabelsFromPR from "./actions/removeLabelsFromPR";
+import { removeLabelsFromPR } from "./actions/removeLabelsFromPR";
 import { getChanges } from "./queries/getChanges";
 
 async function main() {

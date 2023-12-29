@@ -1,6 +1,6 @@
 import { type getOctokit } from "@actions/github";
 
-async function addLabelsToPR({
+export async function addLabelsToPR({
   octokit,
   owner,
   repo,
@@ -26,5 +26,3 @@ async function addLabelsToPR({
 
   console.log(`Added labels [${labels.join(",")}] to PR #${number}`);
 }
-
-export default addLabelsToPR;

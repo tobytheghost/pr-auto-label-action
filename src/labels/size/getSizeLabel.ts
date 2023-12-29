@@ -1,6 +1,6 @@
 import { type PullRequest } from "../../queries/getPullRequest";
 import { LABELS } from "../../config";
-import { ChangedFiles } from "../../queries/getChanges";
+import { type ChangedFiles } from "../../queries/getChanges";
 
 const SIZES = {
   XS: 50,
@@ -20,9 +20,11 @@ function getSizeLabelByLinesChanged(linesChanged: number) {
 }
 
 function getChangedLines(changedFiles: ChangedFiles) {
-  return changedFiles.reduce((acc, { additions, deletions }) => acc + additions + deletions, 0);
+  return changedFiles.reduce(
+    (acc, { additions, deletions }) => acc + additions + deletions,
+    0
+  );
 }
-  
 
 function getSizeLabel(pullRequest: PullRequest, changedFiles: ChangedFiles) {
   console.log(`Getting changed lines for PR #${pullRequest.number}`);

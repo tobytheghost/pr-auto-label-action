@@ -1,6 +1,6 @@
 import { type getOctokit } from "@actions/github";
 
-async function removeLabelsFromPR({
+export async function removeLabelsFromPR({
   octokit,
   owner,
   repo,
@@ -14,7 +14,6 @@ async function removeLabelsFromPR({
   labels: string[];
 }) {
   if (!labels.length) return console.log("No labels to remove");
-
   const response = await Promise.allSettled(
     labels.map((label) => {
       return octokit.rest.issues.removeLabel({
@@ -35,5 +34,3 @@ async function removeLabelsFromPR({
 
   console.log(`Remove labels [${labels.join(",")}] from PR #${number}`);
 }
-
-export default removeLabelsFromPR;
