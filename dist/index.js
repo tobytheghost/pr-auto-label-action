@@ -28185,6 +28185,8 @@ var addLabelsToPR_awaiter = (undefined && undefined.__awaiter) || function (this
 };
 function addLabelsToPR({ octokit, owner, repo, number, labels, }) {
     return addLabelsToPR_awaiter(this, void 0, void 0, function* () {
+        if (!labels.length)
+            return console.log("No labels to add");
         const response = yield octokit.rest.issues.addLabels({
             owner: owner,
             repo: repo,
