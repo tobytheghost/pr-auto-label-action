@@ -28379,6 +28379,7 @@ function main() {
             owner,
             repo,
             number,
+            // Don't need to remove labels if there are none to remove
             labels: labelsToRemove.filter((label) => !labelsToAdd.includes(label)),
         });
         yield actions_addLabelsToPR({
@@ -28386,7 +28387,8 @@ function main() {
             owner,
             repo,
             number,
-            labels: labelsToAdd,
+            // Don't need to add labels if there are none to add
+            labels: labelsToAdd.filter((label) => !labelsToRemove.includes(label)),
         });
     });
 }
