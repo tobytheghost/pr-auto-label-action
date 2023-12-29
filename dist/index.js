@@ -28170,6 +28170,86 @@ const getPullRequest = ({ octokit, owner, repo, number, }) => __awaiter(void 0, 
     return response.data;
 });
 
+;// CONCATENATED MODULE: ./src/config.ts
+const LABELS = {
+    SIZE_XS: "size/XS",
+    SIZE_S: "size/S",
+    SIZE_M: "size/M",
+    SIZE_L: "size/L",
+    SIZE_XL: "size/XL",
+    SIZE_XXL: "size/XXL",
+};
+const LABEL_LIST = Object.values(LABELS);
+
+;// CONCATENATED MODULE: ./src/queries/getLabelsToAdd.ts
+
+const SIZES = {
+    XS: 50,
+    S: 100,
+    M: 250,
+    L: 500,
+    XL: 1000,
+};
+function getSizeLabel(pullRequest, changedFiles) {
+    console.log(`Getting changed lines for PR #${pullRequest.number}`);
+    const linesChanged = changedFiles.reduce((acc, file) => {
+        return acc + file.additions + file.deletions;
+    }, 0);
+    console.log(`Changed lines for PR #${pullRequest.number}: ${linesChanged}`);
+    if (linesChanged <= SIZES.XS)
+        return LABELS.SIZE_XS;
+    if (linesChanged <= SIZES.S)
+        return LABELS.SIZE_S;
+    if (linesChanged <= SIZES.M)
+        return LABELS.SIZE_M;
+    if (linesChanged <= SIZES.L)
+        return LABELS.SIZE_L;
+    if (linesChanged <= SIZES.XL)
+        return LABELS.SIZE_XL;
+    return LABELS.SIZE_XXL;
+}
+function getLabelsToAdd(pullRequest, changedFiles) {
+    const sizeLabel = getSizeLabel(pullRequest, changedFiles);
+    return [sizeLabel];
+}
+
+;// CONCATENATED MODULE: ./src/queries/getExistingLabels.ts
+
+function getExistingLabels(pullRequest) {
+    const labelsFromPR = pullRequest.labels.map((label) => label.name);
+    const labelsToRemove = labelsFromPR.filter((label) => LABEL_LIST.includes(label));
+    return labelsToRemove;
+}
+
+;// CONCATENATED MODULE: ./src/queries/getChanges.ts
+var getChanges_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const getBaseBranch = (pullRequest) => {
+    return pullRequest.base.label;
+};
+const getHeadBranch = (pullRequest) => {
+    return pullRequest.head.label;
+};
+function getChanges({ pullRequest, octokit, owner, repo, }) {
+    return getChanges_awaiter(this, void 0, void 0, function* () {
+        const baseBranch = getBaseBranch(pullRequest);
+        const headBranch = getHeadBranch(pullRequest);
+        return octokit.rest.repos.compareCommits({
+            owner: owner,
+            repo: repo,
+            base: baseBranch,
+            head: headBranch,
+        });
+    });
+}
+
 ;// CONCATENATED MODULE: ./src/actions/addLabelsToPR.ts
 var addLabelsToPR_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -28194,65 +28274,6 @@ function addLabelsToPR({ octokit, owner, repo, number, labels, }) {
             throw new Error("Failed to add label to PR");
         console.log(`Added labels [${labels.join(",")}] to PR #${number}`);
     });
-}
-
-;// CONCATENATED MODULE: ./src/config.ts
-const LABELS = {
-    SIZE_XS: "size/XS",
-    SIZE_S: "size/S",
-    SIZE_M: "size/M",
-    SIZE_L: "size/L",
-    SIZE_XL: "size/XL",
-    SIZE_XXL: "size/XXL",
-};
-const LABEL_LIST = Object.values(LABELS);
-
-;// CONCATENATED MODULE: ./src/labels/size/getSizeLabel.ts
-
-const SIZES = {
-    XS: 50,
-    S: 100,
-    M: 250,
-    L: 500,
-    XL: 1000,
-};
-function getSizeLabelByLinesChanged(linesChanged) {
-    if (linesChanged <= SIZES.XS)
-        return LABELS.SIZE_XS;
-    if (linesChanged <= SIZES.S)
-        return LABELS.SIZE_S;
-    if (linesChanged <= SIZES.M)
-        return LABELS.SIZE_M;
-    if (linesChanged <= SIZES.L)
-        return LABELS.SIZE_L;
-    if (linesChanged <= SIZES.XL)
-        return LABELS.SIZE_XL;
-    return LABELS.SIZE_XXL;
-}
-function getChangedLines(changedFiles) {
-    return changedFiles.reduce((acc, { additions, deletions }) => acc + additions + deletions, 0);
-}
-function getSizeLabel(pullRequest, changedFiles) {
-    console.log(`Getting changed lines for PR #${pullRequest.number}`);
-    const linesChanged = getChangedLines(changedFiles);
-    console.log(`Changed lines for PR #${pullRequest.number}: ${linesChanged}`);
-    return getSizeLabelByLinesChanged(linesChanged);
-}
-/* harmony default export */ const size_getSizeLabel = (getSizeLabel);
-
-;// CONCATENATED MODULE: ./src/labels/getLabelsToAdd.ts
-
-function getLabelsToAdd(pullRequest, changedFiles) {
-    const sizeLabel = size_getSizeLabel(pullRequest, changedFiles);
-    return [sizeLabel];
-}
-
-;// CONCATENATED MODULE: ./src/queries/getLabelsToRemove.ts
-
-function getLabelsToRemove(pullRequest) {
-    const labelsFromPR = pullRequest.labels.map((label) => label.name);
-    const labelsToRemove = labelsFromPR.filter((label) => LABEL_LIST.includes(label));
-    return labelsToRemove;
 }
 
 ;// CONCATENATED MODULE: ./src/actions/removeLabelsFromPR.ts
@@ -28287,35 +28308,6 @@ function removeLabelsFromPR({ octokit, owner, repo, number, labels, }) {
     });
 }
 
-;// CONCATENATED MODULE: ./src/queries/getChanges.ts
-var getChanges_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const getBaseBranch = (pullRequest) => {
-    return pullRequest.base.label;
-};
-const getHeadBranch = (pullRequest) => {
-    return pullRequest.head.label;
-};
-function getChanges({ pullRequest, octokit, owner, repo, }) {
-    return getChanges_awaiter(this, void 0, void 0, function* () {
-        const baseBranch = getBaseBranch(pullRequest);
-        const headBranch = getHeadBranch(pullRequest);
-        return octokit.rest.repos.compareCommits({
-            owner: owner,
-            repo: repo,
-            base: baseBranch,
-            head: headBranch,
-        });
-    });
-}
-
 ;// CONCATENATED MODULE: ./src/index.ts
 var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -28333,7 +28325,7 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 
-function main() {
+(function main() {
     var _a, _b, _c, _d;
     return src_awaiter(this, void 0, void 0, function* () {
         console.log("Starting action");
@@ -28369,27 +28361,28 @@ function main() {
                 return file;
             console.log(`Skipping file ${file.filename}`);
         });
-        const labelsToRemove = getLabelsToRemove(pullRequest);
-        const labelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
+        const existingLabels = getExistingLabels(pullRequest);
+        const allLabelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
+        // Don't need to remove labels if there are none to remove
+        const labelsToRemove = existingLabels.filter((label) => !allLabelsToAdd.includes(label));
         yield removeLabelsFromPR({
             octokit,
             owner,
             repo,
             number,
-            // Don't need to remove labels if there are none to remove
-            labels: labelsToRemove.filter((label) => !labelsToAdd.includes(label)),
+            labels: labelsToRemove,
         });
+        // Don't need to add labels if there are none to add
+        const newLabelsToAdd = allLabelsToAdd.filter((label) => !existingLabels.includes(label));
         yield addLabelsToPR({
             octokit,
             owner,
             repo,
             number,
-            // Don't need to add labels if there are none to add
-            labels: labelsToAdd.filter((label) => !labelsToRemove.includes(label)),
+            labels: newLabelsToAdd,
         });
     });
-}
-main();
+})();
 
 })();
 
