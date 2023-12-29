@@ -13,6 +13,8 @@ async function addLabelsToPR({
   number: number;
   labels: string[];
 }) {
+  if (!labels.length) return console.log("No labels to add");
+
   const response = await octokit.rest.issues.addLabels({
     owner: owner,
     repo: repo,
