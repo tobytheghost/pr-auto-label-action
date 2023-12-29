@@ -28181,21 +28181,21 @@ const LABELS = {
 };
 const LABEL_LIST = Object.values(LABELS);
 
-;// CONCATENATED MODULE: ./src/queries/getLabelsToAdd.ts
+;// CONCATENATED MODULE: ./src/queries/getSizeLabel.ts
 
-const SIZES = {
-    XS: 50,
-    S: 100,
-    M: 250,
-    L: 500,
-    XL: 1000,
-};
 function getSizeLabel(pullRequest, changedFiles) {
     console.log(`Getting changed lines for PR #${pullRequest.number}`);
     const linesChanged = changedFiles.reduce((acc, file) => {
         return acc + file.additions + file.deletions;
     }, 0);
     console.log(`Changed lines for PR #${pullRequest.number}: ${linesChanged}`);
+    const SIZES = {
+        XS: 50,
+        S: 100,
+        M: 250,
+        L: 500,
+        XL: 1000,
+    };
     if (linesChanged <= SIZES.XS)
         return LABELS.SIZE_XS;
     if (linesChanged <= SIZES.S)
@@ -28208,6 +28208,9 @@ function getSizeLabel(pullRequest, changedFiles) {
         return LABELS.SIZE_XL;
     return LABELS.SIZE_XXL;
 }
+
+;// CONCATENATED MODULE: ./src/queries/getLabelsToAdd.ts
+
 function getLabelsToAdd(pullRequest, changedFiles) {
     const sizeLabel = getSizeLabel(pullRequest, changedFiles);
     return [sizeLabel];
@@ -28217,12 +28220,11 @@ function getLabelsToAdd(pullRequest, changedFiles) {
 
 function getExistingLabels(pullRequest) {
     const labelsFromPR = pullRequest.labels.map((label) => label.name);
-    const labelsToRemove = labelsFromPR.filter((label) => LABEL_LIST.includes(label));
-    return labelsToRemove;
+    return labelsFromPR.filter(LABEL_LIST.includes);
 }
 
-;// CONCATENATED MODULE: ./src/queries/getChanges.ts
-var getChanges_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+;// CONCATENATED MODULE: ./src/queries/getChangedFiles.ts
+var getChangedFiles_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -28231,21 +28233,23 @@ var getChanges_awaiter = (undefined && undefined.__awaiter) || function (thisArg
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const getBaseBranch = (pullRequest) => {
-    return pullRequest.base.label;
-};
-const getHeadBranch = (pullRequest) => {
-    return pullRequest.head.label;
-};
-function getChanges({ pullRequest, octokit, owner, repo, }) {
-    return getChanges_awaiter(this, void 0, void 0, function* () {
-        const baseBranch = getBaseBranch(pullRequest);
-        const headBranch = getHeadBranch(pullRequest);
-        return octokit.rest.repos.compareCommits({
+function getChangedFiles({ pullRequest, octokit, owner, repo, }) {
+    var _a, _b;
+    return getChangedFiles_awaiter(this, void 0, void 0, function* () {
+        const ignoredFiles = ((_b = (_a = process.env) === null || _a === void 0 ? void 0 : _a.IGNORED_FILES) === null || _b === void 0 ? void 0 : _b.split(" ")) || [];
+        if (ignoredFiles.length) {
+            console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
+        }
+        const changes = yield octokit.rest.repos.compareCommits({
             owner: owner,
             repo: repo,
-            base: baseBranch,
-            head: headBranch,
+            base: pullRequest.base.label,
+            head: pullRequest.head.label,
+        });
+        return changes.data.files.filter((file) => {
+            if (!ignoredFiles.includes(file.filename))
+                return file;
+            return console.log(`Skipping file ${file.filename}`);
         });
     });
 }
@@ -28326,7 +28330,7 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
 
 
 (function main() {
-    var _a, _b, _c, _d;
+    var _a, _b;
     return src_awaiter(this, void 0, void 0, function* () {
         console.log("Starting action");
         if (github.context.eventName !== "pull_request") {
@@ -28338,9 +28342,6 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
         const token = (_b = process.env) === null || _b === void 0 ? void 0 : _b.GITHUB_TOKEN;
         if (!token)
             throw new Error("No GITHUB_TOKEN found in environment variables");
-        const ignoredFiles = ((_d = (_c = process.env) === null || _c === void 0 ? void 0 : _c.IGNORED_FILES) === null || _d === void 0 ? void 0 : _d.split(" ")) || [];
-        ignoredFiles.length &&
-            console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
         const owner = github.context.repo.owner;
         const repo = github.context.repo.repo;
         const octokit = (0,github.getOctokit)(token);
@@ -28350,16 +28351,11 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
             repo,
             number,
         });
-        const changes = yield getChanges({
+        const changedFiles = yield getChangedFiles({
             pullRequest,
             octokit,
             owner,
             repo,
-        });
-        const changedFiles = changes.data.files.filter((file) => {
-            if (!ignoredFiles.includes(file.filename))
-                return file;
-            console.log(`Skipping file ${file.filename}`);
         });
         const existingLabels = getExistingLabels(pullRequest);
         const allLabelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
