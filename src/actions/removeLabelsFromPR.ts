@@ -13,6 +13,8 @@ async function removeLabelsFromPR({
   number: number;
   labels: string[];
 }) {
+  if (!labels.length) return console.log("No labels to remove");
+
   const response = await Promise.allSettled(
     labels.map((label) => {
       return octokit.rest.issues.removeLabel({
