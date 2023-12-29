@@ -28220,7 +28220,7 @@ function getLabelsToAdd(pullRequest, changedFiles) {
 
 function getExistingLabels(pullRequest) {
     const labelsFromPR = pullRequest.labels.map((label) => label.name);
-    return labelsFromPR.filter(LABEL_LIST.includes);
+    return labelsFromPR.filter((label) => LABEL_LIST.includes(label));
 }
 
 ;// CONCATENATED MODULE: ./src/queries/getChangedFiles.ts
