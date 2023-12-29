@@ -28159,19 +28159,16 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-function getPullRequest({ octokit, owner, repo, number, }) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const response = yield octokit.rest.pulls.get({
-            owner: owner,
-            repo: repo,
-            pull_number: number,
-        });
-        if (response.status !== 200)
-            throw new Error("Failed to get PR");
-        return response.data;
+const getPullRequest = ({ octokit, owner, repo, number, }) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield octokit.rest.pulls.get({
+        owner: owner,
+        repo: repo,
+        pull_number: number,
     });
-}
-/* harmony default export */ const queries_getPullRequest = (getPullRequest);
+    if (response.status !== 200)
+        throw new Error("Failed to get PR");
+    return response.data;
+});
 
 ;// CONCATENATED MODULE: ./src/actions/addLabelsToPR.ts
 var addLabelsToPR_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -28198,7 +28195,6 @@ function addLabelsToPR({ octokit, owner, repo, number, labels, }) {
         console.log(`Added labels [${labels.join(",")}] to PR #${number}`);
     });
 }
-/* harmony default export */ const actions_addLabelsToPR = (addLabelsToPR);
 
 ;// CONCATENATED MODULE: ./src/config.ts
 const LABELS = {
@@ -28290,7 +28286,6 @@ function removeLabelsFromPR({ octokit, owner, repo, number, labels, }) {
         console.log(`Remove labels [${labels.join(",")}] from PR #${number}`);
     });
 }
-/* harmony default export */ const actions_removeLabelsFromPR = (removeLabelsFromPR);
 
 ;// CONCATENATED MODULE: ./src/queries/getChanges.ts
 var getChanges_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -28357,7 +28352,7 @@ function main() {
         const owner = github.context.repo.owner;
         const repo = github.context.repo.repo;
         const octokit = (0,github.getOctokit)(token);
-        const pullRequest = yield queries_getPullRequest({
+        const pullRequest = yield getPullRequest({
             octokit,
             owner,
             repo,
@@ -28376,7 +28371,7 @@ function main() {
         });
         const labelsToRemove = getLabelsToRemove(pullRequest);
         const labelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
-        yield actions_removeLabelsFromPR({
+        yield removeLabelsFromPR({
             octokit,
             owner,
             repo,
@@ -28384,7 +28379,7 @@ function main() {
             // Don't need to remove labels if there are none to remove
             labels: labelsToRemove.filter((label) => !labelsToAdd.includes(label)),
         });
-        yield actions_addLabelsToPR({
+        yield addLabelsToPR({
             octokit,
             owner,
             repo,
