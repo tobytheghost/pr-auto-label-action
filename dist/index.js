@@ -28269,6 +28269,8 @@ var removeLabelsFromPR_awaiter = (undefined && undefined.__awaiter) || function 
 };
 function removeLabelsFromPR({ octokit, owner, repo, number, labels, }) {
     return removeLabelsFromPR_awaiter(this, void 0, void 0, function* () {
+        if (!labels.length)
+            return console.log("No labels to remove");
         const response = yield Promise.allSettled(labels.map((label) => {
             return octokit.rest.issues.removeLabel({
                 owner: owner,
@@ -28347,8 +28349,9 @@ function main() {
         const token = (_b = process.env) === null || _b === void 0 ? void 0 : _b.GITHUB_TOKEN;
         if (!token)
             throw new Error("No GITHUB_TOKEN found in environment variables");
-        const ignoredFiles = ((_d = (_c = process.env) === null || _c === void 0 ? void 0 : _c.IGNORED_FILES) === null || _d === void 0 ? void 0 : _d.split(' ')) || [];
-        ignoredFiles.length && console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
+        const ignoredFiles = ((_d = (_c = process.env) === null || _c === void 0 ? void 0 : _c.IGNORED_FILES) === null || _d === void 0 ? void 0 : _d.split(" ")) || [];
+        ignoredFiles.length &&
+            console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
         const owner = github.context.repo.owner;
         const repo = github.context.repo.repo;
         const octokit = (0,github.getOctokit)(token);
@@ -28370,14 +28373,14 @@ function main() {
             console.log(`Skipping file ${file.filename}`);
         });
         const labelsToRemove = getLabelsToRemove(pullRequest);
+        const labelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
         yield actions_removeLabelsFromPR({
             octokit,
             owner,
             repo,
             number,
-            labels: labelsToRemove,
+            labels: labelsToRemove.filter((label) => !labelsToAdd.includes(label)),
         });
-        const labelsToAdd = getLabelsToAdd(pullRequest, changedFiles);
         yield actions_addLabelsToPR({
             octokit,
             owner,
