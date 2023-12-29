@@ -3,7 +3,7 @@ import { context, getOctokit } from "@actions/github";
 import { getPullRequest } from "./queries/getPullRequest";
 import { getLabelsToAdd } from "./queries/getLabelsToAdd";
 import { getExistingLabels } from "./queries/getExistingLabels";
-import { getChanges } from "./queries/getChanges";
+import { getChangedFiles } from "./queries/getChangedFiles";
 
 import { addLabelsToPR } from "./actions/addLabelsToPR";
 import { removeLabelsFromPR } from "./actions/removeLabelsFromPR";
@@ -21,10 +21,6 @@ import { removeLabelsFromPR } from "./actions/removeLabelsFromPR";
   const token = process.env?.GITHUB_TOKEN;
   if (!token) throw new Error("No GITHUB_TOKEN found in environment variables");
 
-  const ignoredFiles = process.env?.IGNORED_FILES?.split(" ") || [];
-  ignoredFiles.length &&
-    console.log(`Ignored files: ${ignoredFiles.join(", ")}`);
-
   const owner = context.repo.owner;
   const repo = context.repo.repo;
   const octokit = getOctokit(token);
@@ -36,16 +32,11 @@ import { removeLabelsFromPR } from "./actions/removeLabelsFromPR";
     number,
   });
 
-  const changes = await getChanges({
+  const changedFiles = await getChangedFiles({
     pullRequest,
     octokit,
     owner,
     repo,
-  });
-
-  const changedFiles = changes.data.files.filter((file) => {
-    if (!ignoredFiles.includes(file.filename)) return file;
-    console.log(`Skipping file ${file.filename}`);
   });
 
   const existingLabels = getExistingLabels(pullRequest);
